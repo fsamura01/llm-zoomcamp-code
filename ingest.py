@@ -20,6 +20,7 @@ def load_faq_data():
     return documents
 
 def build_index(documents):
+   
     index = Index(
         text_fields=["question", "section", "answer"],
         keyword_fields=["course"]
