@@ -5,7 +5,8 @@ from dotenv import load_dotenv
 from openai import OpenAI
 
 from ingest import load_faq_data, build_index
-from rag_helper import RAGBase
+# from rag_helper import RAGBase
+from metrics import RAGWithMetrics
 
 
 def create_assistant():
@@ -19,7 +20,7 @@ def create_assistant():
         base_url=os.getenv("GROQ_API_BASE_URL", "https://api.groq.ai/v1") or os.getenv("OPENAI_API_BASE_URL", "https://api.openai.com/v1")  
         )
 
-    return RAGBase(
+    return RAGWithMetrics(
         index=index,
         llm_client=openai_client,
         model="openai/gpt-oss-20b",
