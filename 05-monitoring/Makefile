@@ -1,7 +1,11 @@
 run:
 	uv run python assistant.py
+
 chat:
 	uv run streamlit run app.py
+	
+query:
+	uv run python db_query.py
 
 network:
 	docker network create monitoring

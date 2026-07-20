@@ -2,6 +2,14 @@ from dataclasses import dataclass
 
 from db_init import get_db_connection
 from metrics import LLMCallRecord
+#from db_query import get_conversations, get_stats, get_relevance_stats, get_user_feedback_stats
+
+@dataclass
+class Stats:
+    total: int
+    avg_response_time: float
+    total_cost: float
+    avg_tokens: float
 
 def row_to_record(row):
     return LLMCallRecord(
@@ -39,6 +47,61 @@ def get_conversations(limit=10):
         conn.close()
 
     return [row_to_record(row) for row in rows]
+
+def get_stats():
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT
+                    COUNT(*),
+                    AVG(response_time),
+                    SUM(cost),
+                    AVG(total_tokens)
+                FROM llm_call_records
+            """)
+            row = cur.fetchone()
+    finally:
+        conn.close()
+
+    return Stats(
+        total=row[0],
+        avg_response_time=row[1],
+        total_cost=row[2],
+        avg_tokens=row[3],
+    )
+
+
+def get_relevance_stats():
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT relevance, COUNT(*)
+                FROM feedback
+                WHERE source = 'judge'
+                GROUP BY relevance
+            """)
+            rows = cur.fetchall()
+    finally:
+        conn.close()
+    return dict(rows)
+
+def get_user_feedback_stats():
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT
+                    SUM(CASE WHEN score > 0 THEN 1 ELSE 0 END),
+                    SUM(CASE WHEN score < 0 THEN 1 ELSE 0 END)
+                FROM feedback
+                WHERE source = 'user'
+            """)
+            row = cur.fetchone()
+    finally:
+        conn.close()
+    return row
 
 if __name__ == "__main__":
     records = get_conversations()
