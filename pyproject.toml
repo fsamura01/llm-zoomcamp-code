@@ -20,3 +20,8 @@ dependencies = [
     "tokenizers>=0.23.1",
     "tqdm>=4.68.4",
 ]
+
+[tool.uv.workspace]
+members = [
+    "05-monitoring/llm-zoomcamp-hw5",
+]
